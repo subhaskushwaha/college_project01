@@ -2,12 +2,11 @@
 
 ##  Overview
 
-This backend handles APIs for managing call center data allotment and appointment scheduling. It ensures smooth data processing and communication with the database.
+This backend handles APIs for managing call center data allotment . It ensures smooth data processing and communication with the database.
 
 ##  Features
 
 * REST API for data allotment
-* Appointment management
 * Database integration
 * Error handling and validation
 
@@ -36,7 +35,7 @@ npm install
 nodemon server.js
 ```
 
-## 🔗 API Base URL
+##  API Base URL
 
 ```id="m7z2n1"
 http://localhost:4000
