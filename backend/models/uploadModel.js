@@ -1,29 +1,21 @@
-import db from "../config/db.js";
+const db = require("../config/db");
 
-const Lead = {
-  create: async ({ lead_source, assigned_to, file_name, file_type, file_data, file_url }) => {
-    try {
-      const sql = `
-        INSERT INTO leads2 
-        (lead_source, assigned_to, file_name, file_type, file_data, file_url)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `;
+// ➤ Insert
+exports.createUpload = async ({ file_url, assign_to_agent, source }) => {
+  const [result] = await db.query(
+    `INSERT INTO uploads (file_url, assign_to_agent, source)
+     VALUES (?, ?, ?)`,
+    [file_url, assign_to_agent, source]
+  );
 
-      const [result] = await db.query(sql, [
-        lead_source,
-        assigned_to || null,
-        file_name,
-        file_type,
-        file_data,
-        file_url
-      ]);
-
-      return result.insertId;
-    } catch (err) {
-      console.error("DB Error (create lead):", err);
-      throw err;
-    }
-  }
+  return result.insertId;
 };
 
-export default Lead;
+// ➤ Get All
+exports.getAllUploads = async () => {
+  const [rows] = await db.query(
+    `SELECT * FROM uploads ORDER BY id DESC`
+  );
+
+  return rows;
+};

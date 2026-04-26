@@ -1,8 +1,4 @@
-import {
-  generateSummaryService,
-  exportCSVService,
-  exportPDFService,
-} from "../services/reportService.js";
+import {generateSummaryService, exportCSVService, exportPDFService,} from "../services/reportService.js";
 
 export const getReportSummary = async (req, res) => {
   try {

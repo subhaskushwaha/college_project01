@@ -1,16 +1,10 @@
-import express from "express";
-import multer from "multer";
-import { uploadLeadController } from "../controllers/uploadController.js";
-
+const express = require("express");
 const router = express.Router();
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/"),
-  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname)
-});
+const uploadController = require("../controllers/uploadController");
 
-const upload = multer({ storage });
+router.post("/upload", uploadController.uploadLeads);
 
-router.post("/upload", upload.single("file"), uploadLeadController);
+router.get("/uploads", uploadController.getUploads);
 
-export default router;
+module.exports = router;

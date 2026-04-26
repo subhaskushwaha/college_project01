@@ -1,18 +1,56 @@
-import { uploadLeadService } from "../services/uploadService.js";
+const uploadService = require("../services/uploadService");
 
-export const uploadLeadController = async (req, res) => {
+// ➤ POST
+exports.uploadLeads = async (req, res) => {
   try {
-    const host = `${req.protocol}://${req.get("host")}`;
-    const response = await uploadLeadService(req.body, req.file, host);
+    const { file_url, assign_to_agent, source } = req.body;
 
-    return res.status(response.statusCode).json(response);
+    if (!file_url || !assign_to_agent) {
+      return res.status(400).json({
+        success: false,
+        message: "file_url and assign_to_agent required"
+      });
+    }
 
-  } catch (err) {
-    console.error("Controller Error:", err);
-    return res.status(500).json({
+    const result = await uploadService.saveUpload({
+      file_url,
+      assign_to_agent,
+      source
+    });
+
+    res.json({
+      success: true,
+      message: "Data saved successfully",
+      ...result
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
       success: false,
-      statusCode: 500,
-      message: "Unexpected server error"
+      message: "Server Error"
+    });
+  }
+};
+
+// ➤ GET
+exports.getUploads = async (req, res) => {
+  try {
+    const data = await uploadService.getUploads();
+
+    res.json({
+      success: true,
+      count: data.length,
+      data
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error"
     });
   }
 };

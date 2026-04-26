@@ -133,6 +133,20 @@ const User = {
     }
   },
 
+  // ✅ FIXED: get agent by name (same object me add karo)
+  getAgentByName: async (name) => {
+    try {
+      const [rows] = await db.query(
+        `SELECT id FROM users WHERE name=? AND role='agent' LIMIT 1`,
+        [name]
+      );
+      return rows[0] || null;
+    } catch (err) {
+      console.error("Database Error (getAgentByName):", err);
+      throw new Error("Failed to fetch agent by name");
+    }
+  }
+
 };
 
 export default User;
