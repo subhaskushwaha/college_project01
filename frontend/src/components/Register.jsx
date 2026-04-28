@@ -33,39 +33,42 @@ const Register = () => {
         setShowPassword(!showPassword);
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+const BASE_URL = process.env.REACT_APP_API_URL;
 
-        if (!formData.name || !formData.email || !formData.password || !formData.role) {
-            toast.warn('⚠️ Please fill all fields and select a role');
-            return;
+const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!formData.name || !formData.email || !formData.password || !formData.role) {
+        toast.warn('⚠️ Please fill all fields and select a role');
+        return;
+    }
+
+    try {
+        setLoading(true);
+
+        const response = await fetch(`${BASE_URL}/api/auth/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            toast.success(`🎉 ${data.message} (User ID: ${data.user_id})`);
+            setTimeout(() => navigate('/login'), 2000);
+        } else {
+            toast.error(`❌ Registration failed: ${data.message || 'Unknown error'}`);
         }
-
-        try {
-            setLoading(true);
-            const response = await fetch('http://localhost:4000/api/auth/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData)
-            });
-
-            const data = await response.json();
-
-            if (response.ok && data.success) {
-                toast.success(`🎉 ${data.message} (User ID: ${data.user_id})`);
-                setTimeout(() => navigate('/login'), 2000);
-            } else {
-                toast.error(`❌ Registration failed: ${data.message || 'Unknown error'}`);
-            }
-        } catch (error) {
-            console.error('Error during registration:', error);
-            toast.error('🚨 An error occurred while registering. Please try again.');
-        } finally {
-            setLoading(false);
-        }
-    };
+    } catch (error) {
+        console.error('Error during registration:', error);
+        toast.error('🚨 An error occurred while registering. Please try again.');
+    } finally {
+        setLoading(false);
+    }
+};
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
