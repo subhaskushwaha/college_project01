@@ -1,20 +1,18 @@
-const uploadModel = require("../models/uploadModel");
+import Upload from "../models/uploadModel.js";
 
-// ➤ Save
-exports.saveUpload = async ({ file_url, assign_to_agent, source }) => {
-  const uploadId = await uploadModel.createUpload({
+export const saveUpload = async ({ file_url, assign_to_agent, source }) => {
+  const newUpload = await Upload.create({
     file_url,
     assign_to_agent,
-    source
+    source,
   });
 
   return {
-    upload_id: uploadId
+    upload_id: newUpload._id,
   };
 };
 
-// ➤ Get All
-exports.getUploads = async () => {
-  const data = await uploadModel.getAllUploads();
+export const getUploads = async () => {
+  const data = await Upload.find().sort({ _id: -1 });
   return data;
 };

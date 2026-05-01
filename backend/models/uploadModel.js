@@ -1,21 +1,12 @@
-const db = require("../config/db");
+import mongoose from "mongoose";
 
-// ➤ Insert
-exports.createUpload = async ({ file_url, assign_to_agent, source }) => {
-  const [result] = await db.query(
-    `INSERT INTO uploads (file_url, assign_to_agent, source)
-     VALUES (?, ?, ?)`,
-    [file_url, assign_to_agent, source]
-  );
+const uploadSchema = new mongoose.Schema(
+  {
+    file_url: { type: String, required: true },
+    assign_to_agent: { type: String, required: true },
+    source: { type: String, default: null },
+  },
+  { timestamps: true }
+);
 
-  return result.insertId;
-};
-
-// ➤ Get All
-exports.getAllUploads = async () => {
-  const [rows] = await db.query(
-    `SELECT * FROM uploads ORDER BY id DESC`
-  );
-
-  return rows;
-};
+export default mongoose.model("Upload", uploadSchema);

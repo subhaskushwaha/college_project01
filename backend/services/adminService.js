@@ -1,8 +1,8 @@
-import bcrypt from "bcryptjs";
 import User from "../models/userModel.js";
+import bcrypt from "bcryptjs";
 
 export const getAllAgents = async () => {
-  return await User.findAllAgents();
+  return await User.find({ role: "agent" }).select("-password");
 };
 
 export const createAgent = async ({ name, email, phone, status }) => {
@@ -12,61 +12,83 @@ export const createAgent = async ({ name, email, phone, status }) => {
     throw error;
   }
 
-  const existing = await User.findByEmail(email);
+  const existing = await User.findOne({ email });
   if (existing) {
     const error = new Error("Email already exists");
     error.statusCode = 409;
     throw error;
   }
 
-  const agentId = await User.createAgent({ name, email, phone, status });
-  return agentId;
+  const randomPassword = Math.random().toString(36).slice(-8);
+
+  const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+  const agent = await User.create({
+    name,
+    email,
+    phone,
+    status,
+    password: hashedPassword, 
+    role: "agent",
+  });
+
+  return agent._id;
 };
 
 
 export const updateAgentService = async (id, { name, email, phone, status }) => {
 
   if (!name && !email && !phone && !status) {
-    const error = new Error("At least one field (name, email, phone, status) is required");
+    const error = new Error("At least one field required");
     error.statusCode = 400;
     throw error;
   }
 
   if (email) {
-    const existingEmail = await User.findByEmail(email);
-    if (existingEmail && existingEmail.id != id) {
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail && existingEmail._id.toString() !== id) {
       const error = new Error("Email already exists");
       error.statusCode = 409;
       throw error;
     }
   }
 
- if (phone) {
-  const existingPhone = await User.findByPhone(phone);
-  if (existingPhone && existingPhone.id != id) {
-    const error = new Error("Phone number already exists");
-    error.statusCode = 409;
-    throw error;
-  }
-}
-
-  const updatedRows = await User.updateAgent(id, { name, email, phone, status });
-  if (updatedRows === 0) {
-    const error = new Error("Agent not found or no changes made");
-    error.statusCode = 404;
-    throw error;
+  if (phone) {
+    const existingPhone = await User.findOne({ phone });
+    if (existingPhone && existingPhone._id.toString() !== id) {
+      const error = new Error("Phone already exists");
+      error.statusCode = 409;
+      throw error;
+    }
   }
 
-  return id;
-};
+  const updated = await User.findOneAndUpdate(
+    { _id: id, role: "agent" },
+    { name, email, phone, status },
+    { new: true }
+  );
 
-
-export const deleteAgent = async (id) => {
-  const deletedRows = await User.deleteAgent(id);
-  if (deletedRows === 0) {
+  if (!updated) {
     const error = new Error("Agent not found");
     error.statusCode = 404;
     throw error;
   }
-  return deletedRows;
+
+  return updated._id;
+};
+
+
+export const deleteAgent = async (id) => {
+  const deleted = await User.findOneAndDelete({
+    _id: id,
+    role: "agent",
+  });
+
+  if (!deleted) {
+    const error = new Error("Agent not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  return deleted._id;
 };

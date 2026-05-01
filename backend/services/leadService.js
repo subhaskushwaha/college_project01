@@ -3,6 +3,7 @@ import csv from "csv-parser";
 import fs from "fs";
 
 export const handleLeadOperations = async ({ action, filePath, leadId, agentId }) => {
+
   if (action === "upload") {
     return new Promise((resolve, reject) => {
       const leads = [];
@@ -11,16 +12,16 @@ export const handleLeadOperations = async ({ action, filePath, leadId, agentId }
         .pipe(csv())
         .on("data", (row) => {
           leads.push({
-            name: row.name,
-            phone: row.phone,
+            customer_name: row.name,
+            contact_number: row.phone,
             email: row.email,
             status: row.status || "Not Called",
           });
         })
         .on("end", async () => {
           try {
-            const inserted = await Lead.bulkInsert(leads);
-            resolve({ message: `${inserted} leads uploaded successfully` });
+            const inserted = await Lead.insertMany(leads); 
+            resolve({ message: `${inserted.length} leads uploaded successfully` });
           } catch (err) {
             reject(err);
           }
@@ -30,8 +31,14 @@ export const handleLeadOperations = async ({ action, filePath, leadId, agentId }
   }
 
   if (action === "assign") {
-    const updated = await Lead.assignLead(leadId, agentId);
+    const updated = await Lead.findByIdAndUpdate(
+      leadId,
+      { agent_id: agentId },
+      { new: true }
+    );
+
     if (!updated) throw new Error("Lead assignment failed");
+
     return { message: "Lead assigned successfully" };
   }
 
@@ -39,6 +46,7 @@ export const handleLeadOperations = async ({ action, filePath, leadId, agentId }
 };
 
 
+// ✅ GET ALL LEADS
 export const getLeads = async () => {
-  return await Lead.getAllLeads();
+  return await Lead.find().populate("agent_id", "name email");
 };

@@ -9,7 +9,8 @@ export const loginUser = async ({ email, password }) => {
     throw error;
   }
 
-  const user = await User.findByEmail(email);
+  // ✅ MongoDB query
+  const user = await User.findOne({ email });
   if (!user) {
     const error = new Error("Invalid email or password");
     error.statusCode = 401;
@@ -23,16 +24,19 @@ export const loginUser = async ({ email, password }) => {
     throw error;
   }
 
-  const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
-    expiresIn: "1d",
-  });
+  // ⚠️ MongoDB me _id hota hai (id nahi)
+  const token = jwt.sign(
+    { id: user._id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: "1d" }
+  );
 
   return {
     body: {
       message: "Login successful",
       token,
       user: {
-        id: user.id,
+        id: user._id, // ✅ fix
         name: user.name,
         email: user.email,
         role: user.role,
