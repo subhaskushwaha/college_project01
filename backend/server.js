@@ -18,14 +18,19 @@ connectDB();
 
 app.use(express.json());
 
+import cors from "cors";
+
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://callcenterdataalloments.netlify.app"
+];
+
 app.use(cors({
-  origin: [
-    "http://localhost:3000",
-    "https://callcenterdataalloments.netlify.app"
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
+  origin: allowedOrigins,
+  credentials: true,
 }));
+
+app.options("*", cors());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
