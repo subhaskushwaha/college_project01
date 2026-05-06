@@ -5,8 +5,6 @@ export const uploadLeads = async (req, res) => {
     const file = req.file;
     const { agent_name } = req.body;
 
-    console.log("FINAL agent_name:", agent_name);
-
     if (!file || !agent_name) {
       return res.status(400).json({
         success: false,
