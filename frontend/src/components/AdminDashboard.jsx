@@ -15,6 +15,8 @@ const AdminDashboard = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const navigate = useNavigate();
     const [agents, setAgents] = useState([]);
+    const [selectedAgent, setSelectedAgent] = useState("");
+    const [leadSource, setLeadSource] = useState("website");
     const [agentForm, setAgentForm] = useState({
         name: "", email: "", phone: "", status: "active",
     });
@@ -37,21 +39,33 @@ const AdminDashboard = () => {
         loadAgents();
     }, [navigate]);
 
-    const loadAgents = async () => {
-        try {
-            const token = localStorage.getItem("token");
-            if (!token) return;
-            const res = await axios.get("http://localhost:4000/api/admin/agents", 
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            if (res.data.success) setAgents(res.data.data);
-        } catch (error) {
-            console.error("Failed to load agents:", error);
-        }
-    };
+ const loadAgents = async () => {
+    try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
 
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/getAgents`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`, // 🔥 token header
+            },
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            setAgents(data.data); // 👈 table me show hoga
+        } else {
+            console.error(data.message);
+        }
+
+    } catch (error) {
+        console.error("Failed to load agents:", error);
+    }
+};
     const handleAddAgent = async (e) => {
-        e.preventDefault();
+  
         try {
             const token = localStorage.getItem("token");
             const response = await fetch("http://localhost:4000/api/admin/agents", {
@@ -102,19 +116,35 @@ const AdminDashboard = () => {
     };
 
     const uploadLeads = async () => {
-        if (!selectedFile) { alert("Please select a file first"); return; }
-        try {
-            const formData = new FormData();
-            formData.append("file", selectedFile);
-            await axios.post("http://localhost:4000/api/leads/upload", formData, {
+    if (!selectedFile) {
+        alert("Please select a file first");
+        return;
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+        formData.append("source", leadSource);        // ✅ NEW
+        formData.append("agent_name", selectedAgent); // ✅ NEW
+
+        const res = await axios.post(
+            `${process.env.REACT_APP_API_URL}/api/upload`,
+            formData,
+            {
                 headers: { "Content-Type": "multipart/form-data" },
-            });
-            const newUpload = { date: new Date().toISOString().split('T')[0], fileName: selectedFile.name, records: Math.floor(Math.random() * 200) + 50, status: 'completed', file: selectedFile };
-            setUploadHistory(prev => [newUpload, ...prev]);
-            alert("Leads Uploaded Successfully!");
-            setSelectedFile(null);
-        } catch (err) { alert("Error uploading leads"); }
-    };
+            }
+        );
+
+        console.log(res.data);
+
+        alert("Leads Uploaded Successfully!");
+        setSelectedFile(null);
+
+    } catch (err) {
+        console.error(err);
+        alert("Error uploading leads");
+    }
+};
 
     const handleFileSelect = (event) => { if (event.target.files[0]) setSelectedFile(event.target.files[0]); };
     const handleFileDrop = (event) => { event.preventDefault(); if (event.dataTransfer.files.length > 0) setSelectedFile(event.dataTransfer.files[0]); };
@@ -156,18 +186,23 @@ const AdminDashboard = () => {
                 )}
                 {currentPage === 'leads-upload' && (
                     <LeadsUpload 
-                        selectedFile={selectedFile}
-                        setSelectedFile={setSelectedFile}
-                        handleFileDrop={handleFileDrop}
-                        handleDragOver={handleDragOver}
-                        handleDragLeave={handleDragLeave}
-                        handleFileSelect={handleFileSelect}
-                        agentList={agents}
-                        uploadLeads={uploadLeads}
-                        uploadHistory={uploadHistory}
-                        getStatusBadge={getStatusBadge}
-                        handleViewFile={(upload) => { setFilePreview(upload); setShowPreviewModal(true); }}
-                    />
+    selectedFile={selectedFile}
+    setSelectedFile={setSelectedFile}
+    handleFileDrop={handleFileDrop}
+    handleDragOver={handleDragOver}
+    handleDragLeave={handleDragLeave}
+    handleFileSelect={handleFileSelect}
+    agentList={agents}
+    uploadLeads={uploadLeads}
+    uploadHistory={uploadHistory}
+    getStatusBadge={getStatusBadge}
+    handleViewFile={(upload) => { setFilePreview(upload); setShowPreviewModal(true); }}
+
+    selectedAgent={selectedAgent}
+    setSelectedAgent={setSelectedAgent}
+    leadSource={leadSource}
+    setLeadSource={setLeadSource}
+/>
                 )}
                 {currentPage === 'reports' && (
                     <AdminReports activeTab={activeTab} setActiveTab={setActiveTab} />

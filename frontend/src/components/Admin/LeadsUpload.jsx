@@ -11,7 +11,12 @@ const LeadsUpload = ({
     uploadLeads,
     uploadHistory,
     getStatusBadge,
-    handleViewFile
+    handleViewFile,
+
+    selectedAgent,       
+    setSelectedAgent,    
+    leadSource,          
+    setLeadSource        
 }) => {
     return (
         <div className="space-y-6 mt-24" >
@@ -63,7 +68,12 @@ const LeadsUpload = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div>
                         <label htmlFor="assign-agent" className="block text-sm font-medium text-gray-700 mb-1">Assign to Agent (optional)</label>
-                        <select id="assign-agent" className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <select
+  id="assign-agent"
+  value={selectedAgent}
+  onChange={(e) => setSelectedAgent(e.target.value)}
+  className="w-full border border-gray-300 rounded-md px-4 py-2"
+>
                             <option value="">-- Select Agent --</option>
                             {agentList.map(agent => (
                                 <option key={agent.id} value={agent.id}>
@@ -74,7 +84,11 @@ const LeadsUpload = ({
                     </div>
                     <div>
                         <label htmlFor="lead-source" className="block text-sm font-medium text-gray-700 mb-1">Lead Source</label>
-                        <select id="lead-source" className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                       <select id="lead-source"
+          value={leadSource}
+      onChange={(e) => setLeadSource(e.target.value)}
+      className="w-full border border-gray-300 rounded-md px-4 py-2"
+>
                             <option value="website">Website</option>
                             <option value="referral">Referral</option>
                             <option value="social">Social Media</option>
