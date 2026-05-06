@@ -1,12 +1,21 @@
 import mongoose from "mongoose";
 
-const uploadSchema = new mongoose.Schema(
+const customerSchema = new mongoose.Schema(
   {
-    file_url: { type: String, required: true },
-    assign_to_agent: { type: String, required: true },
-    source: { type: String, default: null },
+    customer_name: String,
+    phone: String,
+    email: String,
+    address: String,
+    city: String,
+    campaign_type: String,
+    status: {
+      type: String,
+      enum: ["new", "contacted", "converted"],
+      default: "new",
+    },
+    assigned_agent: String,
   },
   { timestamps: true }
 );
 
-export default mongoose.model("Upload", uploadSchema);
+export default mongoose.model("Customer", customerSchema);

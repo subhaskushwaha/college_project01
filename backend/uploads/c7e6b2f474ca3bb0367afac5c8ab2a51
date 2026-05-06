@@ -1,0 +1,6 @@
+customer_name,phone,email,address,city,campaign_type
+Rahul Sharma,9876543210,rahul.sharma@example.com,MG Road,Bangalore,Email Marketing
+Priya Verma,9123456780,priya.verma@example.com,Indiranagar,Bangalore,Social Media
+Amit Singh,9988776655,amit.singh@example.com,Sector 62,Noida,SMS Campaign
+Neha Gupta,9012345678,neha.gupta@example.com,Andheri West,Mumbai,Cold Calling
+Karan Patel,9090909090,karan.patel@example.com,Navrangpura,Ahmedabad,WhatsApp Marketing

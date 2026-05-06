@@ -1,13 +1,11 @@
-import { 
-  saveUpload, 
-  getUploads as getUploadsService 
-} from "../services/uploadService.js";
+import { processFileAndSave, getLeadsService,} from "../services/uploadService.js"; 
 
-// ✅ Upload
 export const uploadLeads = async (req, res) => {
   try {
     const file = req.file;
-    const { source, agent_name } = req.body || {};
+    const { agent_name } = req.body;
+
+    console.log("FINAL agent_name:", agent_name);
 
     if (!file || !agent_name) {
       return res.status(400).json({
@@ -16,35 +14,38 @@ export const uploadLeads = async (req, res) => {
       });
     }
 
-    const result = await saveUpload({
-      file_url: file.path,
-      assign_to_agent: agent_name,
-      source,
-    });
+    const count = await processFileAndSave(
+      file.path,
+      file.mimetype,
+      agent_name  
+    );
 
     res.status(200).json({
       success: true,
-      upload_id: result.upload_id,
+      message: "Leads uploaded successfully",
+      count,
     });
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({
+      message: "Server error",
+    });
   }
 };
 
-// ✅ Get Uploads
-export const getUploads = async (req, res) => {
+export const getLeads = async (req, res) => {
   try {
-    const data = await getUploadsService(); // ✅ correct call
+    const result = await getLeadsService(req.query);
 
     res.json({
       success: true,
-      count: data.length,
-      data,
+      ...result,
     });
 
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({
+      message: "Server error",
+    });
   }
 };
