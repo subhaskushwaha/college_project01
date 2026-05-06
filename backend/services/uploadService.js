@@ -6,10 +6,8 @@ import Customer from "../models/uploadModel.js";
 export const processFileAndSave = async (filePath, mimetype, agent_name) => {
   try {
     let leads = [];
-
-    console.log("Received agent_name:", agent_name);
-
-    if (mimetype === "text/csv") {
+    
+   if (mimetype === "text/csv") {
       await new Promise((resolve, reject) => {
         fs.createReadStream(filePath)
           .pipe(csv())
@@ -39,7 +37,7 @@ export const processFileAndSave = async (filePath, mimetype, agent_name) => {
       const data = xlsx.utils.sheet_to_json(sheet);
 
       leads = data
-        .filter((row) => row.customer_name || row.phone) // skip empty
+        .filter((row) => row.customer_name || row.phone) 
         .map((row) => ({
           customer_name: row.customer_name || "",
           phone: row.phone || "",
@@ -55,7 +53,7 @@ export const processFileAndSave = async (filePath, mimetype, agent_name) => {
       throw new Error("No valid data found in file");
     }
 
-    console.log("Leads before insert:", leads.slice(0, 2)); // sample check
+    console.log("Leads before insert:", leads.slice(0, 2)); 
 
     await Customer.insertMany(leads);
 
