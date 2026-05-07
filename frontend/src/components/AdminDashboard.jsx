@@ -125,13 +125,15 @@ const AdminDashboard = () => {
         const formData = new FormData();
         formData.append("file", selectedFile);
         formData.append("source", leadSource);        // ✅ NEW
-        formData.append("agent_name", selectedAgent); // ✅ NEW
+        formData.append("agent_name", selectedAgent);
+        const token = localStorage.getItem("token");
+        if (!token) return;
 
         const res = await axios.post(
             `${process.env.REACT_APP_API_URL}/api/upload`,
             formData,
             {
-                headers: { "Content-Type": "multipart/form-data" },
+                headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${token}`,  },
             }
         );
 
