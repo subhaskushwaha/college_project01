@@ -24,10 +24,7 @@ const AdminDashboard = () => {
     const [filePreview, setFilePreview] = useState(null);
     const [showPreviewModal, setShowPreviewModal] = useState(false);
 
-    const [uploadHistory, setUploadHistory] = useState([
-        { date: '2023-10-15', fileName: 'leads_october.csv', records: 150, status: 'completed', fileContent: "Name,Email,Phone,Source\nJohn Doe,john@example.com,123-456-7890,Website" },
-        { date: '2023-09-28', fileName: 'september_leads.xlsx', records: 89, status: 'completed', fileContent: "Name,Email,Phone,Source\nMike Johnson,mike@example.com,123-456-7892,Social Media" }
-    ]);
+  const [uploadHistory] = useState([]);
 
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
