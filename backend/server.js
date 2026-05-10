@@ -2,13 +2,14 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js"; 
-
 import authRoutes from "./routes/authRoutes.js"; 
 import adminRoutes from "./routes/adminRoutes.js";  
 import leadRoutes from "./routes/leadRoutes.js"; 
 import agentRoutes from "./routes/agentRoutes.js"; 
 import reportRoutes from "./routes/reportRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
+import autoAssignLeads from "./routes/autoAssignLeads.js";
+import uploadRoutes2 from "./routes/uploadRoutes2.js"
 
 dotenv.config();
 
@@ -32,6 +33,8 @@ app.use("/api/leads", leadRoutes);
 app.use("/api/agent", agentRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api", uploadRoutes);
+app.use("/api/allotment", autoAssignLeads);
+app.use("/api/files", uploadRoutes2);
 
 app.get("/", (req, res) => {
   res.send("API is running...");
