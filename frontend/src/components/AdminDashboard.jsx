@@ -72,11 +72,11 @@ const AdminDashboard = () => {
             });
             const data = await response.json();
             if (data.success) {
-                alert("Agent added successfully!");
+               
                 setAgents(prev => [...prev, { id: data.agent_id, ...agentForm }]);
                 setAgentForm({ name: "", email: "", phone: "", status: "Active" });
-            } else { alert(data.message || "Failed to add agent"); }
-        } catch (err) { alert("Server error: " + err.message); }
+            } else { console.log(data.message || "Failed to add agent"); }
+        } catch (err) { console.log("Server error: " + err.message); }
     };
 
     const handleEditAgent = async (e) => {
@@ -90,10 +90,10 @@ const AdminDashboard = () => {
             });
             const data = await response.json();
             if (data.success) {
-                alert("Agent updated successfully!");
+                console.log("Agent updated successfully!");
                 setAgents(prev => prev.map(a => (a.id === agentForm.id ? { ...a, ...agentForm } : a)));
-            } else { alert(data.message || "Failed to update agent"); }
-        } catch (error) { alert("Server error: " + error.message); }
+            } else { console.log(data.message || "Failed to update agent"); }
+        } catch (error) { console.log("Server error: " + error.message); }
     };
 
     const handleDeleteAgent = async (id) => {
@@ -106,22 +106,22 @@ const AdminDashboard = () => {
             });
             const data = await response.json();
             if (data.success) {
-                alert("Agent deleted successfully!");
+                console.log("Agent deleted successfully!");
                 setAgents(prev => prev.filter(a => a.id !== id));
-            } else { alert(data.message || "Failed to delete agent"); }
-        } catch (error) { alert("Server error: " + error.message); }
+            } else { console.log(data.message || "Failed to delete agent"); }
+        } catch (error) { console.log("Server error: " + error.message); }
     };
 
     const uploadLeads = async () => {
     if (!selectedFile) {
-        alert("Please select a file first");
+        console.log("Please select a file first");
         return;
     }
 
     try {
         const formData = new FormData();
         formData.append("file", selectedFile);
-        formData.append("source", leadSource);        // ✅ NEW
+        formData.append("source", leadSource);       
         formData.append("agent_name", selectedAgent);
         const token = localStorage.getItem("token");
         if (!token) return;
@@ -136,12 +136,12 @@ const AdminDashboard = () => {
 
         console.log(res.data);
 
-        alert("Leads Uploaded Successfully!");
+        console.log("Leads Uploaded Successfully!");
         setSelectedFile(null);
 
     } catch (err) {
         console.error(err);
-        alert("Error uploading leads");
+        console.log("Error uploading leads");
     }
 };
 
