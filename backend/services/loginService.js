@@ -1,15 +1,15 @@
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 import User from "../models/userModel.js";
 
-export const loginUser = async ({ email, role }) => {
+export const loginUser = async ({ email, password }) => {
 
-  if (!email || !role) {
-    const error = new Error("Email and role are required");
+  if (!email || !password) {
+    const error = new Error("Email and password are required");
     error.statusCode = 400;
     throw error;
   }
 
-  // Find user
   const user = await User.findOne({ email });
 
   if (!user) {
@@ -18,21 +18,20 @@ export const loginUser = async ({ email, role }) => {
     throw error;
   }
 
-  // Role check
-  if (user.role !== role) {
-    const error = new Error(`${role} not found`);
-    error.statusCode = 403;
+  const isMatch = await bcrypt.compare(password, user.password);
+
+  if (!isMatch) {
+    const error = new Error("Invalid password");
+    error.statusCode = 401;
     throw error;
   }
 
-  // Agent status check
   if (user.role === "agent" && user.status !== "active") {
     const error = new Error("Agent account inactive");
     error.statusCode = 403;
     throw error;
   }
 
-  // Token
   const token = jwt.sign(
     {
       id: user._id,

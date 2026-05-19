@@ -1,6 +1,3 @@
-// ===============================
-// 📁 services/uploadService.js
-// ===============================
 
 import fs from "fs";
 import csv from "csv-parser";
@@ -15,9 +12,6 @@ export const processFileService = async (filePath) => {
 
   let rows = [];
 
-  // ===============================
-  // CSV PARSE
-  // ===============================
   if (ext === "csv") {
 
     rows = await new Promise((resolve, reject) => {
@@ -32,9 +26,6 @@ export const processFileService = async (filePath) => {
     });
   }
 
-  // ===============================
-  // EXCEL PARSE
-  // ===============================
   else if (ext === "xlsx" || ext === "xls") {
 
     const workbook = XLSX.readFile(filePath);
@@ -53,9 +44,6 @@ export const processFileService = async (filePath) => {
   let validRows = [];
   let invalidRows = [];
 
-  // ===============================
-  // VALIDATION
-  // ===============================
   for (let row of rows) {
 
     const {
@@ -67,7 +55,6 @@ export const processFileService = async (filePath) => {
       campaign_type
     } = row;
 
-    // basic validation
     if (
       !customer_name ||
       !phone ||
@@ -92,23 +79,14 @@ export const processFileService = async (filePath) => {
     });
   }
 
-  // ===============================
-  // BULK INSERT
-  // ===============================
   if (validRows.length) {
     await Customer.insertMany(validRows);
   }
 
-  // ===============================
-  // INVALID LOG SAVE
-  // ===============================
   if (invalidRows.length) {
     await UploadLog.insertMany(invalidRows);
   }
 
-  // ===============================
-  // DELETE FILE AFTER PROCESS
-  // ===============================
   fs.unlinkSync(filePath);
 
   return {

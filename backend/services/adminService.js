@@ -47,15 +47,12 @@ export const createAgent = async (
     status,
     password: hashedPassword,
     role: "agent",
-
-    // SAVE ADMIN ID
     createdBy: adminId,
   });
 
   return agent._id;
 };
 
-// UPDATE ONLY OWN AGENT
 export const updateAgentService = async (
   id,
   { name, email, phone, status },

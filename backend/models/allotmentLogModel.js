@@ -1,13 +1,45 @@
 import mongoose from "mongoose";
 
-const allotmentLogSchema = new mongoose.Schema({
-  strategy: String,
-  total_leads: Number,
-  agents_involved: Number,
-  allotted_by: String,
-}, { timestamps: true });
+const dataAllotmentLogSchema = new mongoose.Schema(
+  {
+    strategy: {
+      type: String,
+      enum: [
+        "round_robin",
+        "performance_based",
+        "workload_balanced",
+      ],
+      required: true,
+    },
 
-const AllotmentLog = mongoose.model("AllotmentLog", allotmentLogSchema);
+    total_leads: {
+      type: Number,
+      required: true,
+    },
 
-// ✅ IMPORTANT
-export default AllotmentLog;
+    agents_involved: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+
+    allotted_by: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+const DataAllotmentLog =
+  mongoose.models.DataAllotmentLog ||
+  mongoose.model(
+    "DataAllotmentLog",
+    dataAllotmentLogSchema
+  );
+
+export default DataAllotmentLog;

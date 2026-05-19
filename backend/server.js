@@ -10,6 +10,7 @@ import reportRoutes from "./routes/reportRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import autoAssignLeads from "./routes/autoAssignLeads.js";
 import uploadRoutes2 from "./routes/uploadRoutes2.js"
+import agentPerformanceRoutes from "./routes/agentPerformanceRoutes.js";
 
 dotenv.config();
 
@@ -35,6 +36,7 @@ app.use("/api/reports", reportRoutes);
 app.use("/api", uploadRoutes);
 app.use("/api/allotment", autoAssignLeads);
 app.use("/api/files", uploadRoutes2);
+app.use("/api/agentPerformance", agentPerformanceRoutes);
 
 app.get("/", (req, res) => {
   res.send("API is running...");
