@@ -1,10 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';  // ✅ Import Toastify styles
+import 'react-toastify/dist/ReactToastify.css';  
 import './index.css';
 
-import Header from './components/Header';
+import Header from './components/Home/Header';
 import Hero from './components/Hero';
 import Features from './components/Features';
 import Stats from './components/Stats';
@@ -17,6 +17,7 @@ import Login from './components/Login';
 import AgentDashboard from './components/AgentDashboard';
 import AdminDashboard from './components/AdminDashboard';
 import Reports from './components/Reports';
+import ChatWidget from './components/Home/ChatWidget';
 
 function App() {
   return (
@@ -49,6 +50,7 @@ function App() {
                 <Testimonials />
                 <CTA />
                 <Footer />
+                <ChatWidget />
               </>
             } 
           />
@@ -56,7 +58,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/agent-dashboard" element={<AgentDashboard />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          <Route path="/reports" element={<Reports />} />
+          {/* <Route path="/reports" element={<Reports />} /> */}
           {/* Catch-all route - redirects to home */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
