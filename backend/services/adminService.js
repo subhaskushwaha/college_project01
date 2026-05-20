@@ -158,7 +158,11 @@ export const updateAgentService = async (
       {
         _id: id,
         role: "agent",
-        createdBy: adminId,
+        $or: [
+          { createdBy: adminId },
+          { createdBy: { $exists: false } },
+          { createdBy: null },
+        ],
       },
 
       {
@@ -212,7 +216,11 @@ export const deleteAgent = async (
     await User.findOneAndDelete({
       _id: id,
       role: "agent",
-      createdBy: adminId,
+      $or: [
+        { createdBy: adminId },
+        { createdBy: { $exists: false } },
+        { createdBy: null },
+      ],
     });
 
   if (!deleted) {

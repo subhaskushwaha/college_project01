@@ -9,6 +9,6 @@ const router = express.Router();
 const upload = multer({ dest: "uploads/" });
 
 router.post("/upload", authMiddleware, upload.single("file"), uploadLeads);
-router.get("/getUpload", authMiddleware, getLeads);
+router.get("/getLeads", authMiddleware, getLeads);
 
 export default router;
