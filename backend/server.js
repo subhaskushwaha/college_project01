@@ -12,6 +12,7 @@ import uploadRoutes from "./routes/uploadRoutes.js";
 import autoAssignLeads from "./routes/autoAssignLeads.js";
 import uploadRoutes2 from "./routes/uploadRoutes2.js";
 import agentPerformanceRoutes from "./routes/agentPerformanceRoutes.js";
+import analyticsRoutes from "./routes/analyticsRoutes.js";
 
 dotenv.config();
 
@@ -42,6 +43,10 @@ app.use("/api", uploadRoutes);
 app.use("/api/allotment", autoAssignLeads);
 app.use("/api/files", uploadRoutes2);
 app.use("/api/agentPerformance", agentPerformanceRoutes);
+app.use(
+  "/api/analytics",
+  analyticsRoutes
+);
 
 
 app.get("/", (req, res) => {

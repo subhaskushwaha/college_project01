@@ -69,9 +69,6 @@ export const addAgent = async (
   }
 };
 
-// ===============================
-// UPDATE AGENT
-// ===============================
 export const updateAgent = async (
   req,
   res
@@ -104,9 +101,6 @@ export const updateAgent = async (
   }
 };
 
-// ===============================
-// DELETE AGENT
-// ===============================
 export const removeAgent = async (
   req,
   res

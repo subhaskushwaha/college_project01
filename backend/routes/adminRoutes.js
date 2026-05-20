@@ -8,7 +8,7 @@ router.use(authMiddleware, adminOnly);
 
 router.get("/getAgents", listAgents);
 router.post("/createAgents", addAgent);
-router.put("/agents/:id", updateAgent); 
+router.put("/agents/:id", updateAgent);
 router.delete("/agents/:id", removeAgent);
 router.get("/dashboard-stats",  getDashboardStats);
 

@@ -4,6 +4,33 @@ import Customer from "../models/uploadModel.js";
 import User from "../models/userModel.js";
 import CallLog from "../models/callLogModel.js";
 
+const getLast7Days = () => {
+  const dates = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  for (let i = 6; i >= 0; i -= 1) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+    dates.push(date.toISOString().split("T")[0]);
+  }
+
+  return dates;
+};
+
+const normalizeTrends = (trends) => {
+  const trendMap = trends.reduce((acc, item) => {
+    acc[item.date] = item;
+    return acc;
+  }, {});
+
+  return getLast7Days().map((date) => ({
+    date,
+    calls: trendMap[date]?.calls ?? 0,
+    conversions: trendMap[date]?.conversions ?? 0,
+  }));
+};
+
 export const getDashboardStatsService = async (userId, role) => {
 
   if (role === "admin") {
@@ -103,7 +130,7 @@ export const getDashboardStatsService = async (userId, role) => {
         today_calls,
         today_conversions,
       },
-      trends,
+      trends: normalizeTrends(trends),
     };
   }
 
@@ -227,7 +254,7 @@ export const getDashboardStatsService = async (userId, role) => {
         my_today_conversions,
       },
 
-      trends: my_weekly_calls,
+      trends: normalizeTrends(my_weekly_calls),
     };
   }
 
