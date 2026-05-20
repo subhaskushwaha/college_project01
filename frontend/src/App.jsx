@@ -16,7 +16,7 @@ import Register from './components/Register';
 import Login from './components/Login';
 import AgentDashboard from './components/AgentDashboard';
 import AdminDashboard from './components/AdminDashboard';
-import Reports from './components/Reports';
+// import Reports from './components/Reports';
 import ChatWidget from './components/Home/ChatWidget';
 
 function App() {
