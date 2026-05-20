@@ -1,7 +1,11 @@
-import User from "../models/userModel.js";
+// services/adminService.js
+import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
+import User from "../models/userModel.js";
 
-// GET ONLY OWN AGENTS
+// ===============================
+// GET ALL OWN AGENTS
+// ===============================
 export const getAllAgents = async (adminId) => {
 
   return await User.find({
@@ -10,36 +14,59 @@ export const getAllAgents = async (adminId) => {
   }).select("-password");
 };
 
+// ===============================
 // CREATE AGENT
+// ===============================
 export const createAgent = async (
   { name, email, phone, status },
   adminId
 ) => {
 
+  // Validation
   if (!name || !email || !phone || !status) {
     const error = new Error(
-      "Name, email, phone, and status are required"
+      "Name, email, phone and status are required"
     );
+
     error.statusCode = 400;
     throw error;
   }
 
-  const existing = await User.findOne({ email });
+  // Check email exists
+  const existingEmail = await User.findOne({
+    email,
+  });
 
-  if (existing) {
-    const error = new Error("Email already exists");
+  if (existingEmail) {
+    const error = new Error(
+      "Email already exists"
+    );
+
     error.statusCode = 409;
     throw error;
   }
 
-  // FIXED PASSWORD
-  const randomPassword = "agent123";
+  // Check phone exists
+  const existingPhone = await User.findOne({
+    phone,
+  });
 
-  const hashedPassword = await bcrypt.hash(
-    randomPassword,
-    10
-  );
+  if (existingPhone) {
+    const error = new Error(
+      "Phone already exists"
+    );
 
+    error.statusCode = 409;
+    throw error;
+  }
+
+  // Default Password
+  const defaultPassword = "agent123";
+
+  const hashedPassword =
+    await bcrypt.hash(defaultPassword, 10);
+
+  // Create Agent
   const agent = await User.create({
     name,
     email,
@@ -53,65 +80,108 @@ export const createAgent = async (
   return agent._id;
 };
 
+// ===============================
+// UPDATE AGENT
+// ===============================
 export const updateAgentService = async (
   id,
   { name, email, phone, status },
   adminId
 ) => {
 
-  if (!name && !email && !phone && !status) {
-    const error = new Error("At least one field required");
+  // ObjectId validation
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    const error = new Error(
+      "Invalid agent ID"
+    );
+
     error.statusCode = 400;
     throw error;
   }
 
+  // At least one field required
+  if (
+    !name &&
+    !email &&
+    !phone &&
+    !status
+  ) {
+    const error = new Error(
+      "At least one field is required"
+    );
+
+    error.statusCode = 400;
+    throw error;
+  }
+
+  // Email check
   if (email) {
 
-    const existingEmail = await User.findOne({ email });
+    const existingEmail =
+      await User.findOne({ email });
 
     if (
       existingEmail &&
       existingEmail._id.toString() !== id
     ) {
-      const error = new Error("Email already exists");
+      const error = new Error(
+        "Email already exists"
+      );
+
       error.statusCode = 409;
       throw error;
     }
   }
 
+  // Phone check
   if (phone) {
 
-    const existingPhone = await User.findOne({ phone });
+    const existingPhone =
+      await User.findOne({ phone });
 
     if (
       existingPhone &&
       existingPhone._id.toString() !== id
     ) {
-      const error = new Error("Phone already exists");
+      const error = new Error(
+        "Phone already exists"
+      );
+
       error.statusCode = 409;
       throw error;
     }
   }
 
-  const updated = await User.findOneAndUpdate(
-    {
-      _id: id,
-      role: "agent",
-      createdBy: adminId,
-    },
-    {
-      name,
-      email,
-      phone,
-      status,
-    },
-    {
-      new: true,
-    }
-  );
+  // Update agent
+  const updated =
+    await User.findOneAndUpdate(
+      {
+        _id: id,
+        role: "agent",
+        createdBy: adminId,
+      },
 
+      {
+        $set: {
+          ...(name && { name }),
+          ...(email && { email }),
+          ...(phone && { phone }),
+          ...(status && { status }),
+        },
+      },
+
+      {
+        new: true,
+      }
+    );
+
+  // Agent not found
   if (!updated) {
-    const error = new Error("Agent not found");
+
+    const error = new Error(
+      "Agent not found"
+    );
+
     error.statusCode = 404;
     throw error;
   }
@@ -119,17 +189,38 @@ export const updateAgentService = async (
   return updated._id;
 };
 
-// DELETE ONLY OWN AGENT
-export const deleteAgent = async (id, adminId) => {
+// ===============================
+// DELETE AGENT
+// ===============================
+export const deleteAgent = async (
+  id,
+  adminId
+) => {
 
-  const deleted = await User.findOneAndDelete({
-    _id: id,
-    role: "agent",
-    createdBy: adminId,
-  });
+  // ObjectId validation
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+
+    const error = new Error(
+      "Invalid agent ID"
+    );
+
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const deleted =
+    await User.findOneAndDelete({
+      _id: id,
+      role: "agent",
+      createdBy: adminId,
+    });
 
   if (!deleted) {
-    const error = new Error("Agent not found");
+
+    const error = new Error(
+      "Agent not found"
+    );
+
     error.statusCode = 404;
     throw error;
   }

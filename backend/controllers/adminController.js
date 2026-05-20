@@ -1,3 +1,4 @@
+// controllers/adminController.js
 import {
   getAllAgents,
   createAgent,
@@ -5,13 +6,19 @@ import {
   deleteAgent,
 } from "../services/adminService.js";
 
-export const listAgents = async (req, res) => {
+// ===============================
+// GET ALL AGENTS
+// ===============================
+export const listAgents = async (
+  req,
+  res
+) => {
   try {
 
-    // TOKEN SE ADMIN ID
-    const agents = await getAllAgents(req.user.id);
+    const agents =
+      await getAllAgents(req.user.id);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       statusCode: 200,
       data: agents,
@@ -19,80 +26,114 @@ export const listAgents = async (req, res) => {
 
   } catch (err) {
 
-    res.status(err.statusCode || 500).json({
-      success: false,
-      message: err.message,
-    });
+    return res
+      .status(err.statusCode || 500)
+      .json({
+        success: false,
+        message: err.message,
+      });
   }
 };
 
-export const addAgent = async (req, res) => {
+// ===============================
+// CREATE AGENT
+// ===============================
+export const addAgent = async (
+  req,
+  res
+) => {
   try {
 
-    // TOKEN SE ADMIN ID PASS
-    const agentId = await createAgent(req.body, req.user.id);
+    const agentId =
+      await createAgent(
+        req.body,
+        req.user.id
+      );
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       statusCode: 201,
-      message: "Agent created successfully",
+      message:
+        "Agent created successfully",
       agent_id: agentId,
     });
 
   } catch (err) {
 
-    res.status(err.statusCode || 500).json({
-      success: false,
-      message: err.message,
-    });
+    return res
+      .status(err.statusCode || 500)
+      .json({
+        success: false,
+        message: err.message,
+      });
   }
 };
 
-export const updateAgent = async (req, res) => {
+// ===============================
+// UPDATE AGENT
+// ===============================
+export const updateAgent = async (
+  req,
+  res
+) => {
   try {
 
-    const updatedId = await updateAgentService(
-      req.params.id,
-      req.body,
-      req.user.id
-    );
+    const updatedId =
+      await updateAgentService(
+        req.params.id,
+        req.body,
+        req.user.id
+      );
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       statusCode: 200,
-      message: "Agent updated successfully",
+      message:
+        "Agent updated successfully",
       agent_id: updatedId,
     });
 
   } catch (err) {
 
-    res.status(err.statusCode || 500).json({
-      success: false,
-      message: err.message,
-    });
+    return res
+      .status(err.statusCode || 500)
+      .json({
+        success: false,
+        message: err.message,
+      });
   }
 };
 
-export const removeAgent = async (req, res) => {
+// ===============================
+// DELETE AGENT
+// ===============================
+export const removeAgent = async (
+  req,
+  res
+) => {
   try {
 
-    const deletedRows = await deleteAgent(
-      req.params.id,
-      req.user.id
-    );
+    const deletedId =
+      await deleteAgent(
+        req.params.id,
+        req.user.id
+      );
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       statusCode: 200,
-      message: "Agent deleted successfully",
-      deletedRows,
+      message:
+        "Agent deleted successfully",
+      deleted_id: deletedId,
     });
 
   } catch (err) {
 
-    res.status(err.statusCode || 500).json({
-      success: false,
-      message: err.message,
-    });
+    return res
+      .status(err.statusCode || 500)
+      .json({
+        success: false,
+        message: err.message,
+      });
   }
 };
