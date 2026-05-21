@@ -14,6 +14,7 @@ const AdminDashboard = () => {
     const [currentUser, setCurrentUser] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const navigate = useNavigate();
+    const [dashboardStats, setDashboardStats] = useState(null);
     const [agents, setAgents] = useState([]);
     const [selectedAgent, setSelectedAgent] = useState("");
     const [leadSource, setLeadSource] = useState("website");
@@ -24,45 +25,73 @@ const AdminDashboard = () => {
     const [filePreview, setFilePreview] = useState(null);
     const [showPreviewModal, setShowPreviewModal] = useState(false);
 
-  const [uploadHistory] = useState([]);
+    const [uploadHistory, setUploadHistory] = useState([]);
+const getDashboardStats = async () => {
+    try {
+        const token = localStorage.getItem("token");
 
+        const res = await axios.get(
+            `${process.env.REACT_APP_API_URL}/api/admin/dashboard-stats`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+
+        console.log("DASHBOARD STATS =>", res.data);
+
+        if (res.data.success) {
+            setDashboardStats(res.data.data);
+        }
+
+    } catch (error) {
+        console.error("DASHBOARD STATS ERROR =>", error);
+    }
+};
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+
         if (!user.id || user.role !== 'admin') {
             navigate('/login');
             return;
         }
+
         setCurrentUser(user);
+
         loadAgents();
+getDashboardStats();
+        getUploadHistory(); // ✅ ADD THIS
+
     }, [navigate]);
 
- const loadAgents = async () => {
-    try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
+    const loadAgents = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) return;
 
-        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/getAgents`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`, // 🔥 token header
-            },
-        });
+            const res = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/getAgents`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`, // 🔥 token header
+                },
+            });
 
-        const data = await res.json();
+            const data = await res.json();
 
-        if (data.success) {
-            setAgents(data.data); // 👈 table me show hoga
-        } else {
-            console.error(data.message);
+            if (data.success) {
+                setAgents(data.data); // 👈 table me show hoga
+            } else {
+                console.error(data.message);
+            }
+
+        } catch (error) {
+            console.error("Failed to load agents:", error);
         }
-
-    } catch (error) {
-        console.error("Failed to load agents:", error);
-    }
-};
+    };
     const handleAddAgent = async (e) => {
-  
+
         try {
             const token = localStorage.getItem("token");
             const response = await fetch("http://localhost:4000/api/admin/agents", {
@@ -72,78 +101,135 @@ const AdminDashboard = () => {
             });
             const data = await response.json();
             if (data.success) {
-               
+                alert("Agent added successfully!");
                 setAgents(prev => [...prev, { id: data.agent_id, ...agentForm }]);
                 setAgentForm({ name: "", email: "", phone: "", status: "Active" });
-            } else { console.log(data.message || "Failed to add agent"); }
-        } catch (err) { console.log("Server error: " + err.message); }
+            } else { alert(data.message || "Failed to add agent"); }
+        } catch (err) { alert("Server error: " + err.message); }
     };
 
     const handleEditAgent = async (e) => {
         e.preventDefault();
         try {
             const token = localStorage.getItem("token");
-            const response = await fetch(`http://localhost:4000/api/admin/agents/${agentForm.id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                body: JSON.stringify(agentForm),
-            });
+            const response = await fetch(
+                `${process.env.REACT_APP_API_URL}/api/admin/agents/${agentForm._id}`,
+                {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                    body: JSON.stringify(agentForm),
+                });
             const data = await response.json();
             if (data.success) {
-                console.log("Agent updated successfully!");
-                setAgents(prev => prev.map(a => (a.id === agentForm.id ? { ...a, ...agentForm } : a)));
-            } else { console.log(data.message || "Failed to update agent"); }
-        } catch (error) { console.log("Server error: " + error.message); }
+                alert("Agent updated successfully!");
+                setAgents(prev =>
+                    prev.map(a =>
+                        a._id === agentForm._id
+                            ? { ...a, ...agentForm }
+                            : a
+                    )
+                );
+            } else { alert(data.message || "Failed to update agent"); }
+        } catch (error) { alert("Server error: " + error.message); }
     };
 
-    const handleDeleteAgent = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this agent?")) return;
-        try {
-            const token = localStorage.getItem("token");
-            const response = await fetch(`http://localhost:4000/api/admin/agents/${id}`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            const data = await response.json();
-            if (data.success) {
-                console.log("Agent deleted successfully!");
-                setAgents(prev => prev.filter(a => a.id !== id));
-            } else { console.log(data.message || "Failed to delete agent"); }
-        } catch (error) { console.log("Server error: " + error.message); }
-    };
-
-    const uploadLeads = async () => {
-    if (!selectedFile) {
-        console.log("Please select a file first");
-        return;
-    }
+const handleDeleteAgent = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this agent?")) return;
 
     try {
-        const formData = new FormData();
-        formData.append("file", selectedFile);
-        formData.append("source", leadSource);       
-        formData.append("agent_name", selectedAgent);
         const token = localStorage.getItem("token");
-        if (!token) return;
 
-        const res = await axios.post(
-            `${process.env.REACT_APP_API_URL}/api/upload`,
-            formData,
+        const response = await fetch(
+            `${process.env.REACT_APP_API_URL}/api/admin/agents/${id}`,
             {
-                headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${token}`,  },
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
             }
         );
 
-        console.log(res.data);
+        const data = await response.json();
 
-        console.log("Leads Uploaded Successfully!");
-        setSelectedFile(null);
+        if (data.success) {
+            alert("Agent deleted successfully!");
 
-    } catch (err) {
-        console.error(err);
-        console.log("Error uploading leads");
+            // UI update
+            setAgents(prev => prev.filter(a => a._id !== id));
+
+        } else {
+            alert(data.message || "Failed to delete agent");
+        }
+
+    } catch (error) {
+        console.error(error);
+        alert("Server error: " + error.message);
     }
 };
+    const getUploadHistory = async () => {
+        try {
+            const token = localStorage.getItem("token");
+
+            const res = await axios.get(
+                `${process.env.REACT_APP_API_URL}/api/getLeads`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            console.log("UPLOAD HISTORY =>", res.data);
+
+            if (res.data.success) {
+                setUploadHistory(res.data.data);
+            }
+
+        } catch (error) {
+            console.error("FETCH ERROR =>", error);
+        }
+    };
+    const uploadLeads = async () => {
+        if (!selectedFile) {
+            alert("Please select a file first");
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem("token");
+
+            const formData = new FormData();
+            formData.append("file", selectedFile);
+            formData.append("source", leadSource);
+            formData.append("agent_name", selectedAgent);
+
+            const res = await axios.post(
+                `${process.env.REACT_APP_API_URL}/api/upload`,
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            console.log("UPLOAD RESPONSE =>", res.data);
+
+            alert("Leads Uploaded Successfully!");
+
+            // ✅ upload history refresh
+            getUploadHistory();
+
+            // ✅ reset
+            setSelectedFile(null);
+
+        } catch (err) {
+            console.error("UPLOAD ERROR =>", err);
+            alert("Error uploading leads");
+        }
+    };
 
     const handleFileSelect = (event) => { if (event.target.files[0]) setSelectedFile(event.target.files[0]); };
     const handleFileDrop = (event) => { event.preventDefault(); if (event.dataTransfer.files.length > 0) setSelectedFile(event.dataTransfer.files[0]); };
@@ -151,27 +237,53 @@ const AdminDashboard = () => {
     const handleDragLeave = (event) => { event.preventDefault(); };
 
     const getStatusBadge = (status) => {
-        if (status === 'active' || status === 'completed') {
-            return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 capitalize">{status}</span>;
-        } else {
-            return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 capitalize">{status === 'inactive' ? 'Inactive' : 'Failed'}</span>;
-        }
-    };
 
+        if (
+            status === 'active' ||
+            status === 'completed' ||
+            status === 'new'
+        ) {
+            return (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 capitalize">
+                    {status}
+                </span>
+            );
+        }
+
+        if (status === 'inactive') {
+            return (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 capitalize">
+                    Inactive
+                </span>
+            );
+        }
+
+        return (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 capitalize">
+                Failed
+            </span>
+        );
+    };
     if (!currentUser) return <div className="flex h-screen items-center justify-center text-xl text-gray-500">Loading...</div>;
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-            <AdminHeader 
-                currentPage={currentPage} 
-                setCurrentPage={setCurrentPage} 
-                currentUser={currentUser} 
+            <AdminHeader
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                currentUser={currentUser}
             />
 
             <main className="container mx-auto px-4 py-8 flex-1 w-full max-w-7xl">
-                {currentPage === 'dashboard' && <DashboardOverview getStatusBadge={getStatusBadge} />}
+               {currentPage === 'dashboard' && (
+    <DashboardOverview
+        getStatusBadge={getStatusBadge}
+        dashboardStats={dashboardStats}
+         uploadHistory={uploadHistory}
+    />
+)}
                 {currentPage === 'agents' && (
-                    <AgentManagement 
+                    <AgentManagement
                         agents={agents}
                         searchTerm={searchTerm}
                         setSearchTerm={setSearchTerm}
@@ -184,24 +296,24 @@ const AdminDashboard = () => {
                     />
                 )}
                 {currentPage === 'leads-upload' && (
-                    <LeadsUpload 
-    selectedFile={selectedFile}
-    setSelectedFile={setSelectedFile}
-    handleFileDrop={handleFileDrop}
-    handleDragOver={handleDragOver}
-    handleDragLeave={handleDragLeave}
-    handleFileSelect={handleFileSelect}
-    agentList={agents}
-    uploadLeads={uploadLeads}
-    uploadHistory={uploadHistory}
-    getStatusBadge={getStatusBadge}
-    handleViewFile={(upload) => { setFilePreview(upload); setShowPreviewModal(true); }}
+                    <LeadsUpload
+                        selectedFile={selectedFile}
+                        setSelectedFile={setSelectedFile}
+                        handleFileDrop={handleFileDrop}
+                        handleDragOver={handleDragOver}
+                        handleDragLeave={handleDragLeave}
+                        handleFileSelect={handleFileSelect}
+                        agentList={agents}
+                        uploadLeads={uploadLeads}
+                        uploadHistory={uploadHistory}
+                        getStatusBadge={getStatusBadge}
+                        handleViewFile={(upload) => { setFilePreview(upload); setShowPreviewModal(true); }}
 
-    selectedAgent={selectedAgent}
-    setSelectedAgent={setSelectedAgent}
-    leadSource={leadSource}
-    setLeadSource={setLeadSource}
-/>
+                        selectedAgent={selectedAgent}
+                        setSelectedAgent={setSelectedAgent}
+                        leadSource={leadSource}
+                        setLeadSource={setLeadSource}
+                    />
                 )}
                 {currentPage === 'reports' && (
                     <AdminReports activeTab={activeTab} setActiveTab={setActiveTab} />

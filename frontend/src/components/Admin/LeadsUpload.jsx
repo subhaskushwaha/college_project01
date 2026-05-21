@@ -13,10 +13,10 @@ const LeadsUpload = ({
     getStatusBadge,
     handleViewFile,
 
-    selectedAgent,       
-    setSelectedAgent,    
-    leadSource,          
-    setLeadSource        
+    selectedAgent,       // ✅ NEW
+    setSelectedAgent,    // ✅ NEW
+    leadSource,          // ✅ NEW
+    setLeadSource        // ✅ NEW
 }) => {
     return (
         <div className="space-y-6 mt-24" >
@@ -84,10 +84,11 @@ const LeadsUpload = ({
                     </div>
                     <div>
                         <label htmlFor="lead-source" className="block text-sm font-medium text-gray-700 mb-1">Lead Source</label>
-                       <select id="lead-source"
-          value={leadSource}
-      onChange={(e) => setLeadSource(e.target.value)}
-      className="w-full border border-gray-300 rounded-md px-4 py-2"
+                       <select
+  id="lead-source"
+  value={leadSource}
+  onChange={(e) => setLeadSource(e.target.value)}
+  className="w-full border border-gray-300 rounded-md px-4 py-2"
 >
                             <option value="website">Website</option>
                             <option value="referral">Referral</option>
@@ -125,9 +126,9 @@ const LeadsUpload = ({
                         <tbody className="bg-white divide-y divide-gray-200">
                             {uploadHistory.map((upload, index) => (
                                 <tr key={index}>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{upload.date}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{upload.fileName}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{upload.records}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{upload.createdAt?.slice(0,10)}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{upload.customer_name}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{upload.phone}</td>
                                     <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(upload.status)}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                                         <button 

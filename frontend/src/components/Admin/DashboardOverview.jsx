@@ -1,12 +1,15 @@
 import React, { useEffect, useRef } from 'react';
 
-const DashboardOverview = ({ getStatusBadge }) => {
+const DashboardOverview = ({ getStatusBadge, dashboardStats, uploadHistory = [] }) => {
     const chartsRef = useRef({});
-
+    const latestActivity = uploadHistory
+        ?.slice()
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 5);
     useEffect(() => {
         const initializeCharts = () => {
             if (!window.Chart) return;
-            
+
             // Destroy all charts first
             Object.values(chartsRef.current).forEach(chart => {
                 if (chart && typeof chart.destroy === 'function') chart.destroy();
@@ -49,7 +52,7 @@ const DashboardOverview = ({ getStatusBadge }) => {
             });
         };
     }, []);
-
+    const overview = dashboardStats?.overview || {};
     return (
         <div className="space-y-6 mt-24" >
             <div className="mb-6">
@@ -60,35 +63,36 @@ const DashboardOverview = ({ getStatusBadge }) => {
             {/* Metric Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-                    <h3 className="text-gray-500 font-medium text-sm">Total Calls Today</h3>
-                    <div className="text-3xl font-bold text-gray-800 my-2">1,247</div>
-                    <div className="text-green-500 text-sm font-medium">↑ 12% from yesterday</div>
+                    <h3 className="text-gray-500 font-medium text-sm">Total Leads</h3>
+                    <div className="text-3xl font-bold text-gray-800 my-2">
+                        {overview.total_leads || 0}
+                    </div>
                 </div>
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-                    <h3 className="text-gray-500 font-medium text-sm">Active Agents</h3>
-                    <div className="text-3xl font-bold text-gray-800 my-2">42</div>
-                    <div className="text-green-500 text-sm font-medium">↑ 3 from last week</div>
-                </div>
+
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                     <h3 className="text-gray-500 font-medium text-sm">Conversion Rate</h3>
-                    <div className="text-3xl font-bold text-gray-800 my-2">18.5%</div>
-                    <div className="text-green-500 text-sm font-medium">↑ 2.3% from last month</div>
+                    <div className="text-3xl font-bold text-gray-800 my-2">
+                        {overview.converted_leads || 0}
+                    </div>
                 </div>
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-                    <h3 className="text-gray-500 font-medium text-sm">Avg. Handling Time</h3>
-                    <div className="text-3xl font-bold text-gray-800 my-2">4.2 min</div>
-                    <div className="text-red-500 text-sm font-medium">↓ 0.5 min from last week</div>
+                    <h3 className="text-gray-500 font-medium text-sm">Total Agents</h3>
+
+                    <div className="text-3xl font-bold text-gray-800 my-2">
+                        {overview.total_agents || 0}
+                    </div>
+                </div>
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                    <h3 className="text-gray-500 font-medium text-sm">Today Calls</h3>
+                    <div className="text-3xl font-bold text-gray-800 my-2">
+                        {overview.today_calls || 0}
+                    </div>
                 </div>
             </div>
 
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Calls by Status</h3>
-                    <div className="h-64 relative">
-                        <canvas id="calls-status-chart"></canvas>
-                    </div>
-                </div>
+
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                     <h3 className="text-lg font-semibold text-gray-800 mb-4">Agent Performance</h3>
                     <div className="h-64 relative">
@@ -112,30 +116,25 @@ const DashboardOverview = ({ getStatusBadge }) => {
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                <tr>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">John Smith</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Completed call with customer</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">10:25 AM</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge('active')}</td>
-                                </tr>
-                                <tr>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Sarah Johnson</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Follow-up call scheduled</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">10:18 AM</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge('active')}</td>
-                                </tr>
-                                <tr>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Mike Davis</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Call dropped</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">10:12 AM</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge('inactive')}</td>
-                                </tr>
-                                <tr>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Emily Wilson</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">New lead assigned</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">10:05 AM</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge('active')}</td>
-                                </tr>
+                                {latestActivity?.map((item, index) => (
+                                    <tr key={index}>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            {item.assigned_agent|| "Unknown"}
+                                        </td>
+
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {item.campaign_type || "Lead uploaded"}
+                                        </td>
+
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {new Date(item.createdAt).toLocaleTimeString()}
+                                        </td>
+
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {getStatusBadge(item.status || "active")}
+                                        </td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
                     </div>

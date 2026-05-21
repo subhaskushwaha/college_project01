@@ -12,43 +12,44 @@ const AgentManagement = ({
     getStatusBadge
 }) => {
     const [open, setOpen] = useState(false);
-const BASE_URL = process.env.REACT_APP_API_URL;
+    const BASE_URL = process.env.REACT_APP_API_URL;
     const filteredAgents = agents.filter(agent =>
         agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         agent.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
-   const createAgent = async () => {
-    try {
-        const token = localStorage.getItem("token"); // 🔥 get token
+    const createAgent = async () => {
+        try {
+            const token = localStorage.getItem("token"); // 🔥 get token
 
-        const res = await fetch(`${BASE_URL}/api/admin/createAgents`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`, // 🔥 send token
-            },
-            body: JSON.stringify({
-                name: agentForm.name,
-                email: agentForm.email,
-                phone: agentForm.phone,
-                status: agentForm.status,
-            }),
-        });
+            const res = await fetch(`${BASE_URL}/api/admin/createAgents`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`, // 🔥 send token
+                },
+                body: JSON.stringify({
+                    name: agentForm.name,
+                    email: agentForm.email,
+                    phone: agentForm.phone,
+                    password: agentForm.password,
+                    status: agentForm.status,
+                }),
+            });
 
-        const data = await res.json();
+            const data = await res.json();
 
-        if (!res.ok) {
-            throw new Error(data.message || "Failed to create agent");
+            if (!res.ok) {
+                throw new Error(data.message || "Failed to create agent");
+            }
+
+            console.log("Agent Created:", data);
+            handleAddAgent(data);
+
+        } catch (error) {
+            console.error("Error:", error.message);
+            alert(error.message);
         }
-
-        console.log("Agent Created:", data);
-        handleAddAgent(data);
-
-    }catch (error) {
-        console.error("Error:", error.message);
-        alert(error.message);
-    }
-};
+    };
     return (
         <div className="space-y-6 mt-24" >
             <div className="mb-6">
@@ -76,6 +77,7 @@ const BASE_URL = process.env.REACT_APP_API_URL;
                                 name: "",
                                 email: "",
                                 phone: "",
+                                password: "",
                                 status: "active",
                             });
                             setOpen(true);
@@ -89,20 +91,20 @@ const BASE_URL = process.env.REACT_APP_API_URL;
             {open && (
                 <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
                     <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-xl">
-                        <h3 className="text-xl font-bold mb-4">{agentForm.id ? 'Edit Agent' : 'Add New Agent'}</h3>
+                        <h3 className="text-xl font-bold mb-4">Edit Agent</h3>
                         <form
                             className="flex flex-col gap-4"
-                            onSubmit={async (e) => {
-                                e.preventDefault();
+                          onSubmit={async (e) => {
+    e.preventDefault();
 
-                                if (agentForm.id) {
-                                    handleEditAgent(e);
-                                } else {
-                                    await createAgent();  // 🔥 API call
-                                }
+    if (agentForm._id) {
+        await handleEditAgent(e);
+    } else {
+        await createAgent();
+    }
 
-                                setOpen(false);
-                            }}
+    setOpen(false);
+}}
                         >
                             <input
                                 type="text"
@@ -128,6 +130,18 @@ const BASE_URL = process.env.REACT_APP_API_URL;
                                 onChange={(e) => setAgentForm({ ...agentForm, phone: e.target.value })}
                                 required
                             />
+                           {!agentForm._id && (
+    <input
+        type="password"
+        placeholder="Password"
+        className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        value={agentForm.password}
+        onChange={(e) =>
+            setAgentForm({ ...agentForm, password: e.target.value })
+        }
+        required
+    />
+)}
                             <select
                                 className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 value={agentForm.status}
@@ -169,7 +183,7 @@ const BASE_URL = process.env.REACT_APP_API_URL;
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                             {filteredAgents.map(agent => (
-                                <tr key={agent.id}>
+                                <tr key={agent._id}>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{agent.name}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{agent.email}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{agent.phone}</td>
@@ -187,7 +201,7 @@ const BASE_URL = process.env.REACT_APP_API_URL;
                                         </button>
                                         <button
                                             className="text-red-600 hover:text-red-900 bg-red-50 px-3 py-1 rounded-md"
-                                            onClick={() => handleDeleteAgent(agent.id)}
+                                            onClick={() => handleDeleteAgent(agent._id)}
                                         >
                                             Delete
                                         </button>
